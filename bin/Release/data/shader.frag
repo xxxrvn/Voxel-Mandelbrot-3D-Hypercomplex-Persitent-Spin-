@@ -21,21 +21,14 @@ vec3 hsv2rgb(vec3 c){
     vec3 p = abs(fract(c.xxx + K.xyz) * 6.0 - K.www);
     return c.z * mix(K.xxx, clamp(p - K.xxx, 0.0, 1.0), c.y);
 }
-vec2 cx_log(vec2 a) {
-    float ipart = atan(a.y,a.x);
-    if (ipart > PI) ipart=ipart-(2.0*PI);
-    return vec2(0.,ipart);
-}
 
 void cAdd(vec3 a,vec3 ad,vec3 b, vec3 bd,out vec3 c,out vec3 cd){
     c=vec3(a.x+b.x,a.y+b.y,a.z+b.z);
 
     vec3 nd;
-    nd.x=(cx_log(vec2(cos(ad.x)/length(c.xy)*length(a.xy)+cos(bd.x)/length(c.xy)*length(b.xy),sin(ad.x)/length(c.xy)*length(a.xy)+sin(bd.x)/length(c.xy)*length(b.xy))).y);
-    nd.y=(cx_log(vec2(cos(ad.y)/length(c.yz)*length(a.yz)+cos(bd.y)/length(c.yz)*length(b.yz),sin(ad.y)/length(c.yz)*length(a.yz)+sin(bd.y)/length(c.yz)*length(b.yz))).y);
-    nd.z=(cx_log(vec2(cos(ad.z)/length(c.zx)*length(a.zx)+cos(bd.z)/length(c.zx)*length(b.zx),sin(ad.z)/length(c.zx)*length(a.zx)+sin(bd.z)/length(c.zx)*length(b.zx))).y);
-
-
+    nd.x=atan(sin(ad.x)/length(c.xy)*length(a.xy)+sin(bd.x)/length(c.xy)*length(b.xy),cos(ad.x)/length(c.xy)*length(a.xy)+cos(bd.x)/length(c.xy)*length(b.xy));
+    nd.y=atan(sin(ad.y)/length(c.yz)*length(a.yz)+sin(bd.y)/length(c.yz)*length(b.yz),cos(ad.y)/length(c.yz)*length(a.yz)+cos(bd.y)/length(c.yz)*length(b.yz));
+    nd.z=atan(sin(ad.z)/length(c.zx)*length(a.zx)+sin(bd.z)/length(c.zx)*length(b.zx),cos(ad.z)/length(c.zx)*length(a.zx)+cos(bd.z)/length(c.zx)*length(b.zx));
 
     cd=nd;
 
@@ -55,75 +48,50 @@ void cInit(float a, float b, float c,float q, out vec3 d, out vec3 dd){
     cAdd(d,dd,vec3(0.0,0.0,c),vec3(0.0,0.0,PI/2.+((c<0.)?PI:0.)),d,dd);
     cAdd(d,dd,vec3(0.0,0.0,q),vec3(0.0,PI/2.+((q<0.)?PI:0.),0.0),d,dd);
 }
-void cSqr(vec3 a,vec3 ad,out vec3 b,out vec3 bd){
-    b=a;
-    bd=ad;
+void cMul(vec3 a, vec3 ad,vec3 b,vec3 bd,out vec3 c,out vec3 cd){
+    c=vec3(1,0,0);
+    cd=ad+bd;
 
-    vec3 n=b;
-    vec3 nd=bd;
+    vec3 n=c;
+    vec3 nd=cd;
 
-    n=b;
-    b.x=n.x*cos(nd.x)-n.y*sin(nd.x);
-    b.y=n.x*sin(nd.x)+n.y*cos(nd.x);
+    c.x=n.x*cos(nd.x)-n.y*sin(nd.x);
+    c.y=n.x*sin(nd.x)+n.y*cos(nd.x);
 
-    n=b;
-    b.y=n.y*cos(nd.y)-n.z*sin(nd.y);
-    b.z=n.y*sin(nd.y)+n.z*cos(nd.y);
+    n=c;
+    c.y=n.y*cos(nd.y)-n.z*sin(nd.y);
+    c.z=n.y*sin(nd.y)+n.z*cos(nd.y);
 
-    n=b;
-    b.x=n.x*cos(nd.z)-n.z*sin(nd.z);
-    b.z=n.x*sin(nd.z)+n.z*cos(nd.z);
-    b*=length(b);
-    bd=ad*2.;
+    n=c;
+    c.x=n.x*cos(nd.z)-n.z*sin(nd.z);
+    c.z=n.x*sin(nd.z)+n.z*cos(nd.z);
+
+    c*=length(a)*length(b);
+
 }
-
-void cPowi(vec3 a,vec3 ad,int npow,out vec3 b,out vec3 bd){
-    b=a;
-    bd=ad;
-
-    vec3 n=b;
-    vec3 nd=bd;
-    for(int i=0;i<npow-1;i++){
-    n=b;
-    b.x=n.x*cos(nd.x)-n.y*sin(nd.x);
-    b.y=n.x*sin(nd.x)+n.y*cos(nd.x);
-
-    n=b;
-    b.y=n.y*cos(nd.y)-n.z*sin(nd.y);
-    b.z=n.y*sin(nd.y)+n.z*cos(nd.y);
-
-    n=b;
-    b.x=n.x*cos(nd.z)-n.z*sin(nd.z);
-    b.z=n.x*sin(nd.z)+n.z*cos(nd.z);
-    b*=length(b);
-    }
-
-    bd=ad*float(npow);
-}
-
 
 void cPowf(vec3 a,vec3 ad,float npow,out vec3 b,out vec3 bd){
     b=vec3(1,0,0);
-    bd=ad;
+    bd=ad*npow;
 
     vec3 n=b;
     vec3 nd=bd;
-    n=b;
-    b.x=n.x*cos(nd.x*npow)-n.y*sin(nd.x*npow);
-    b.y=n.x*sin(nd.x*npow)+n.y*cos(nd.x*npow);
+
+    b.x=n.x*cos(nd.x)-n.y*sin(nd.x);
+    b.y=n.x*sin(nd.x)+n.y*cos(nd.x);
 
     n=b;
-    b.y=n.y*cos(nd.y*npow)-n.z*sin(nd.y*npow);
-    b.z=n.y*sin(nd.y*npow)+n.z*cos(nd.y*npow);
+    b.y=n.y*cos(nd.y)-n.z*sin(nd.y);
+    b.z=n.y*sin(nd.y)+n.z*cos(nd.y);
 
     n=b;
-    b.x=n.x*cos(nd.z*npow)-n.z*sin(nd.z*npow);
-    b.z=n.x*sin(nd.z*npow)+n.z*cos(nd.z*npow);
+    b.x=n.x*cos(nd.z)-n.z*sin(nd.z);
+    b.z=n.x*sin(nd.z)+n.z*cos(nd.z);
+
     b*=pow(length(a),npow);
 
-    bd=ad*npow;
-}
 
+}
 
 float mandi(in vec3 p ) {
 
