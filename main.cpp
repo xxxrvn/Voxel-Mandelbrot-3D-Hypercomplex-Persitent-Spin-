@@ -27,7 +27,7 @@ int main()
      renderTexture.create(800U, 800U );
 
     auto shader = sf::Shader{};
-    if (!shader.loadFromFile(GetExeDirectory()+"/data/shader.frag", sf::Shader::Fragment))
+    if (!shader.loadFromFile(GetExeDirectory()+"/data/Shader.frag", sf::Shader::Fragment))
     {
         std::cerr << "Couldn't load fragment shader\n";
         return -1;
@@ -49,11 +49,16 @@ int main()
             }
         }
 
-        shader.setUniform("iResolution", sf::Glsl::Vec2{ window.getSize() });
+        shader.setUniform("iResolution", sf::Glsl::Vec2{ renderTexture.getSize() });
         shader.setUniform("iTime", float(t)/10);
-        shader.setUniform("iVoxRes",8.0f);
+        shader.setUniform("iVoxRes",2.0f);
         shader.setUniform("iPower",2.0f);
         shader.setUniform("iMaxTrace",1000);
+
+        shader.setUniform("isJulia",false);
+        shader.setUniform("isAnti",true);
+        shader.setUniform("iAlpha",0.1f);
+
 
         t++;
 
@@ -72,5 +77,5 @@ int main()
         window.clear();
          window.draw(sprite);
         window.display();
-        if(t>=71)return(0);
+       // if(t>=200)return(0);
     }}
