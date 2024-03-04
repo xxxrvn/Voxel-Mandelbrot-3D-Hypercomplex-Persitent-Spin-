@@ -51,13 +51,13 @@ int main()
 
         shader.setUniform("iResolution", sf::Glsl::Vec2{ renderTexture.getSize() });
         shader.setUniform("iTime", float(t)/10);
-        shader.setUniform("iVoxRes",2.0f);
+        shader.setUniform("iVoxRes",8.0f);
         shader.setUniform("iPower",2.0f);
         shader.setUniform("iMaxTrace",1000);
 
         shader.setUniform("isJulia",false);
-        shader.setUniform("isAnti",true);
-        shader.setUniform("iAlpha",0.1f);
+        shader.setUniform("isAnti",false);
+        shader.setUniform("iAlpha",1.0f);
 
 
         t++;
