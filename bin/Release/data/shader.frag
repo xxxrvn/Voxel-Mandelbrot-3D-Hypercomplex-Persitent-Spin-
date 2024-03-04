@@ -7,6 +7,9 @@ uniform float iTime;
 uniform float iPower;
 uniform float iVoxRes;
 uniform int iMaxTrace;
+uniform bool isJulia;
+uniform bool isAnti;
+uniform float iAlpha;
 
 const float pi = 3.141592;
 const float tau = 2.0*pi;
@@ -70,6 +73,28 @@ void cMul(vec3 a, vec3 ad,vec3 b,vec3 bd,out vec3 c,out vec3 cd){
 
 }
 
+void cDiv(vec3 a, vec3 ad,vec3 b,vec3 bd,out vec3 c,out vec3 cd){
+    c=vec3(1,0,0);
+    cd=ad-bd;
+
+    vec3 n=c;
+    vec3 nd=cd;
+
+    c.x=n.x*cos(nd.x)-n.y*sin(nd.x);
+    c.y=n.x*sin(nd.x)+n.y*cos(nd.x);
+
+    n=c;
+    c.y=n.y*cos(nd.y)-n.z*sin(nd.y);
+    c.z=n.y*sin(nd.y)+n.z*cos(nd.y);
+
+    n=c;
+    c.x=n.x*cos(nd.z)-n.z*sin(nd.z);
+    c.z=n.x*sin(nd.z)+n.z*cos(nd.z);
+
+    c*=length(a)/length(b);
+
+}
+
 void cPowf(vec3 a,vec3 ad,float npow,out vec3 b,out vec3 bd){
     b=vec3(1,0,0);
     bd=ad*npow;
@@ -108,7 +133,6 @@ float mandi(in vec3 p ) {
 
     for (int i=0; i<100; i++) {
         cPowf(z,zd,iPower,q,qd);
-        //cSqr(z,zd,q,qd);
 
         cAdd(q,qd,c,cd,z,zd);
 
@@ -117,12 +141,41 @@ float mandi(in vec3 p ) {
             break;
         }
     }
-    if (inMandelbrotSet) {
+    if (inMandelbrotSet^^isAnti) {
         return(length(z));
     } else {
         return(0.);
     }
 }
+
+float julia(in vec3 p ) {
+
+    vec3 z = vec3(0.,0.,0.);
+    vec3 zd=vec3(0.,0.,0.);
+
+    vec3 c;
+    vec3 cd;
+    vec3 q;
+    vec3 qd;
+    cInit(p.x,p.y,p.z,0.0,z,zd);
+    cInit(0.3,0.5,0.4,0.6,c,cd);
+    int j=0;
+
+    for (int i=0; i<100; i++) {
+
+        cPowf(z,zd,iPower,q,qd);
+
+        cAdd(q,qd,c,cd,z,zd);
+
+        if (length(z) > 100.) {
+            break;
+        }
+        j++;
+    }
+	if((float(j)/100.<0.1)^^isAnti){return 0.0;}
+	else return(length(z));
+}
+
 
 
 #define TIME iTime/2.0
@@ -136,7 +189,9 @@ struct hit {
 };
 
 hit getVoxel(vec3 p) {
-        float c=mandi(vec3(p)*.05/iVoxRes);
+        float c;
+        if(isJulia){c=julia(vec3(p)*.05/iVoxRes);}
+        else{c=mandi(vec3(p)*.05/iVoxRes);}
     if (c!=0.)
         return hit(true, (hsv2rgb(vec3(length(c),1.0,1))));
     else
@@ -179,11 +234,16 @@ hit intersect(vec3 ro, vec3 rd) {
 
     vec3 norm;
     int maxTrace = iMaxTrace;
-
+    hit q=hit(false,vec3(0,0,0));
     for (int i = 0; i < maxTrace; i++) {
         hit h = getVoxel(vec3(pos));
         if (h.didHit) {
+          if(iAlpha==1.){
             return hit(true, (lighting(norm, pos, rd, h.col)+h.col)/2.);
+            }
+            else{
+              q=hit(true,(h.col*(iAlpha)+q.col*(1-iAlpha)));
+            }
         }
 
         if (tMaxX < tMaxY) {
@@ -209,7 +269,7 @@ hit intersect(vec3 ro, vec3 rd) {
         }
     }
 
- 	return hit(false, vec3(0,0,0));
+ 	return q;
 }
 
 void main()
