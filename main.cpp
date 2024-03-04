@@ -19,10 +19,10 @@ std::string GetExeDirectory()
 int main()
 {
     int t=0;
-    auto window = sf::RenderWindow{ { 800U, 800U }, "The Book of Shaders" };
+    auto window = sf::RenderWindow{ { 800U, 800U }, "VoxelToast" };
     window.setFramerateLimit(144);
 
-    auto shape = sf::RectangleShape{ sf::Vector2f{ window.getSize() } };
+    auto shape = sf::RectangleShape{ sf::Vector2f{ 800U, 800U  } };
     sf::RenderTexture renderTexture;
      renderTexture.create(800U, 800U );
 
@@ -51,13 +51,13 @@ int main()
 
         shader.setUniform("iResolution", sf::Glsl::Vec2{ renderTexture.getSize() });
         shader.setUniform("iTime", float(t)/10);
-        shader.setUniform("iVoxRes",8.0f);
+        shader.setUniform("iVoxRes",2.0f);
         shader.setUniform("iPower",2.0f);
         shader.setUniform("iMaxTrace",1000);
 
         shader.setUniform("isJulia",false);
         shader.setUniform("isAnti",false);
-        shader.setUniform("iAlpha",1.0f);
+        shader.setUniform("iAlpha",0.1f);
 
 
         t++;
